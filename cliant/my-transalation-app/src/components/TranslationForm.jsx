@@ -11,6 +11,34 @@ export default function TranslationForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFallback, setIsFallback] = useState(false);
 
+  // Supported languages with labels
+  const languages = [
+    { code: "en", name: "English" },
+    { code: "es", name: "Spanish" },
+    { code: "fr", name: "French" },
+    { code: "de", name: "German" },
+    { code: "it", name: "Italian" },
+    { code: "pt", name: "Portuguese" },
+    { code: "ru", name: "Russian" },
+    { code: "zh", name: "Chinese" },
+    { code: "ja", name: "Japanese" },
+    { code: "ko", name: "Korean" },
+    { code: "ar", name: "Arabic" },
+    { code: "hi", name: "Hindi" },
+    { code: "bn", name: "Bengali" },
+    { code: "pa", name: "Punjabi" },
+    { code: "tr", name: "Turkish" },
+    { code: "nl", name: "Dutch" },
+    { code: "sv", name: "Swedish" },
+    { code: "fi", name: "Finnish" },
+    { code: "pl", name: "Polish" },
+    { code: "uk", name: "Ukrainian" },
+    { code: "am", name: "Amharic" },
+    { code: "sw", name: "Swahili" },
+    { code: "zu", name: "Zulu" },
+    { code: "xh", name: "Xhosa" },
+  ];
+
   const handleTranslate = async () => {
     if (!text.trim()) {
       setError("Please enter text to translate");
@@ -62,6 +90,12 @@ export default function TranslationForm() {
     }
   };
 
+  // Swap source and target languages
+  const swapLanguages = () => {
+    setSourceLang(targetLang);
+    setTargetLang(sourceLang);
+  };
+
   return (
     <div className="translation-container">
       <h1>Language Translator</h1>
@@ -75,7 +109,7 @@ export default function TranslationForm() {
         />
       </div>
 
-      <div className="language-selectors">
+      <div className="language-controls">
         <div className="language-selector">
           <label>From:</label>
           <select
@@ -83,13 +117,22 @@ export default function TranslationForm() {
             onChange={(e) => setSourceLang(e.target.value)}
             disabled={isLoading}
           >
-            <option value="en">English</option>
-            <option value="es">Spanish</option>
-            <option value="fr">French</option>
-            <option value="ar">Arabic</option>
-            <option value="am">Amharic</option>
+            {languages.map((lang) => (
+              <option key={`source-${lang.code}`} value={lang.code}>
+                {lang.name} ({lang.code})
+              </option>
+            ))}
           </select>
         </div>
+
+        <button
+          className="swap-button"
+          onClick={swapLanguages}
+          disabled={isLoading}
+          title="Swap languages"
+        >
+          ⇄
+        </button>
 
         <div className="language-selector">
           <label>To:</label>
@@ -98,18 +141,42 @@ export default function TranslationForm() {
             onChange={(e) => setTargetLang(e.target.value)}
             disabled={isLoading}
           >
-            <option value="es">Spanish</option>
-            <option value="fr">French</option>
-            <option value="en">English</option>
-            <option value="ar">Arabic</option>
-            <option value="am">Amharic</option>
+            {languages.map((lang) => (
+              <option key={`target-${lang.code}`} value={lang.code}>
+                {lang.name} ({lang.code})
+              </option>
+            ))}
           </select>
         </div>
       </div>
 
-      <button onClick={handleTranslate} disabled={isLoading || !text.trim()}>
-        {isLoading ? "Translating..." : "Translate"}
-      </button>
+      <div className="action-buttons">
+        <button
+          onClick={handleTranslate}
+          disabled={isLoading || !text.trim()}
+          className="translate-button"
+        >
+          {isLoading ? (
+            <>
+              <span className="spinner"></span>
+              Translating...
+            </>
+          ) : (
+            "Translate"
+          )}
+        </button>
+        <button
+          onClick={() => {
+            setText("");
+            setTranslatedText("");
+            setError("");
+          }}
+          disabled={isLoading}
+          className="clear-button"
+        >
+          Clear
+        </button>
+      </div>
 
       {error && (
         <div className="error-message">
@@ -121,7 +188,7 @@ export default function TranslationForm() {
       )}
 
       {translatedText && (
-        <div className="result-section">
+        <div className={`result-section ${isFallback ? "fallback" : ""}`}>
           <h3>Translation Result:</h3>
           <div className="translated-text">
             {translatedText}
@@ -130,6 +197,18 @@ export default function TranslationForm() {
                 (Using limited offline translation)
               </div>
             )}
+          </div>
+          <div className="translation-meta">
+            <span className="language-info">
+              {languages.find((l) => l.code === sourceLang)?.name} →{" "}
+              {languages.find((l) => l.code === targetLang)?.name}
+            </span>
+            <button
+              onClick={() => navigator.clipboard.writeText(translatedText)}
+              className="copy-button"
+            >
+              Copy
+            </button>
           </div>
         </div>
       )}
